@@ -40,7 +40,7 @@ void next(int step)
     h->Draw("colz");
 
     // print out event info
-    gSystem->Exec(Form("./print_evt_info.sh %d %s", gEvent, gLogfname));
+    gSystem->Exec(Form("scripts/print_evt_info.sh %d %s", gEvent, gLogfname));
 
     return;
 }
