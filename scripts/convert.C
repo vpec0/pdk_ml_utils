@@ -65,13 +65,15 @@ void convert(const char* fname, int nevents = 1, int startevt = 0)
     // // pedestal to be subtracted
     // const double pedestal = 490.;
 
-    if (nevents > tree->GetEntries())
+    if (nevents == -1 || nevents > tree->GetEntries())
 	nevents = tree->GetEntries();
     int fiftieth = nevents/50;
 
     FOR(entry, nevents) {
 	if (fiftieth && entry%fiftieth == 0) {
-	    cout<<"Done "<<entry<<" entries ("<<(100*entry/nevents)<<"%).\r"<<flush;
+	    if (entry)
+		cout<<"\r"<<flush;
+	    cout<<"Done "<<entry<<" entries ("<<(100*entry/nevents)<<"%)."<<flush;
 	}
 
 	// Get entry
@@ -174,8 +176,8 @@ void FindROI(TH2* h, float thldx, float thldy)
 
     int marginx = (xhi-xlow)*0.1;
     int marginy = (yhi-ylow)*0.1;
-    if (amrginx == 0) marginx = 1;
-    if (amrginy == 0) marginy = 1;
+    if (marginx == 0) marginx = 1;
+    if (marginy == 0) marginy = 1;
     h->GetXaxis()->SetRange(xlow-marginx, xhi+marginx);
     h->GetYaxis()->SetRange(ylow-marginy, yhi+marginy);
 }
@@ -187,7 +189,9 @@ void overThreshold(TH1D* h, float threshold, int& binlow, int& binhi)
     binlow = 1;
     binhi = nbins;
 
+#ifdef DEBUG
     cout<<"Searching for ROI in "<<nbins<<" bins, from "<<h->GetXaxis()->GetXmin()<<" to "<<h->GetXaxis()->GetXmax()<<endl;
+#endif
 
     FOR(i, nbins) {
 	if (h->GetBinContent(i+1) > threshold) {
