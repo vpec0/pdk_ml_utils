@@ -18,7 +18,7 @@
 #include "TStyle.h"
 #include "TROOT.h"
 
-//#define DEBUG
+#define DEBUG
 
 using namespace std;
 
@@ -95,7 +95,7 @@ void convert(const char* fname, int nevents = 1, int startevt = 0)
 	    // Create the output histogram
 	    int cols = evt->as_vector()[iplane].meta().cols();
 	    int rows = evt->as_vector()[iplane].meta().rows();
-	    auto h = new TH2F(Form("hRawDigitsVsWireVsTick_plane%d_%d", iplane, ievent), ";Ticks;Wire",
+	    auto h = new TH2F(Form("hRawDigitsVsWireVsTick_plane%d_%d", iplane, ievent), ";Ticks;Wire;ADC",
 			      cols, (iplane==2)?-cols/2:0, (iplane==2)?cols/2:cols, // Ticks
 			      rows, 0., rows); // Wires
 
@@ -246,14 +246,26 @@ void FindROI(TH2* h, float thldx, float thldy)
 #endif
 
     xhi *= rebinx;
-    xlow *= rebinx;
+    xlow = (xlow-1)*rebinx;
     yhi *= rebiny;
-    ylow *= rebiny;
+    ylow = (ylow-1)*rebiny;
+
+#ifdef DEBUG
+    cout<<"For original binning, found range X: "<<xlow<<" - "<<xhi<<endl
+	<<"                                  Y: "<<ylow<<" - "<<yhi<<endl;
+#endif
+
 
     int marginx = (xhi-xlow)*0.1;
     int marginy = (yhi-ylow)*0.1;
     if (marginx == 0) marginx = 1;
     if (marginy == 0) marginy = 1;
+
+#ifdef DEBUG
+    cout<<"Setting X margin: "<<marginx<<endl
+	<<"        Y margin: "<<marginy<<endl;
+#endif
+
     h->GetXaxis()->SetRange(xlow-marginx, xhi+marginx);
     h->GetYaxis()->SetRange(ylow-marginy, yhi+marginy);
 }
@@ -270,9 +282,9 @@ void overThreshold(TH1D* h, float threshold, int& binlow, int& binhi)
 #endif
 
     FOR(i, nbins) {
-#ifdef DEBUG
-	cout<<" Bin "<<(i+1)<<" content = "<<abs(h->GetBinContent(i+1))<<endl;
-#endif
+// #ifdef DEBUG
+// 	cout<<" Bin "<<(i+1)<<" content = "<<abs(h->GetBinContent(i+1))<<endl;
+// #endif
 
 	if (abs(h->GetBinContent(i+1)) > threshold) {
 	    binlow = i+1;
