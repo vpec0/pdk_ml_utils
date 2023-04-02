@@ -157,23 +157,25 @@ void convert(const char* fname, int nevents = 1, int startevt = 0)
 	if ( DOCSV ) {
 	    auto target = csvname_pat;
 	    target.ReplaceAll("_plane%d", "") += ".gz.tar";
+	    target = Form(target, ievent);
 	    cout<<target<<endl;
 	    auto source = csvname_pat;
 	    source.ReplaceAll("_plane%d", "_plane{0..2}") += ".gz";
+	    source = Form(source, ievent);
 	    cout<<source<<endl;
-	    gSystem->Exec( Form("tar --remove-files -cf " + target + " " + source,
-				ievent, ievent) );
+	    gSystem->Exec( "tar --remove-files -cf " + target + " " + source );
 	}
 	// Tar files after every 20 events
 	if ( DOCSV && (entry+1)%groupfiles == 0) {
 	    auto target = csvname_pat;
 	    target.ReplaceAll("_plane%d_", "_grp") += ".gz.tar";
+	    target = Form(target, entry/groupfiles);
 	    cout<<target<<endl;
 	    auto source = csvname_pat;
 	    source.ReplaceAll("_plane%d_%d", "_{%d..%d}") += ".gz.tar";
+	    source = Form(source, ievent-groupfiles+1, ievent);
 	    cout<<source<<endl;
-	    gSystem->Exec( Form("tar --remove-files -cf " + target + " " + source,
-				entry/groupfiles, ievent-groupfiles+1, ievent) );
+	    gSystem->Exec( "tar --remove-files -cf " + target + " " + source );
 	}
     } // FOR entry
     cout<<endl;
@@ -184,12 +186,13 @@ void convert(const char* fname, int nevents = 1, int startevt = 0)
 	if (nevents%groupfiles > 0 && nevents/groupfiles > 0) {
 	    auto target = csvname_pat;
 	    target.ReplaceAll("_plane%d_", "_grp") += ".gz.tar";
+	    target = Form(target, nevents/groupfiles);
 	    cout<<target<<endl;
 	    auto source = csvname_pat;
 	    source.ReplaceAll("_plane%d_%d", "_{%d..%d}") += ".gz.tar";
+	    source = Form(source, startevt+nevents-(nevents%groupfiles), startevt + nevents - 1);
 	    cout<<source<<endl;
-	    gSystem->Exec( Form("tar --remove-files -cf " + target + " " + source,
-				nevents/groupfiles, startevt+nevents-groupfiles, startevt + nevents - 1) );
+	    gSystem->Exec( "tar --remove-files -cf " + target + " " + source);
 	}
 
 	cout<<"nevents = "<<nevents<<", startevt = "<<startevt<<endl;
@@ -200,8 +203,9 @@ void convert(const char* fname, int nevents = 1, int startevt = 0)
 	    cout<<target<<endl;
 	    auto source = csvname_pat;
 	    source.ReplaceAll("_plane%d_%d", "_{%d..%d}") += ".gz.tar";
+	    source = Form(source, startevt, startevt+nevents-1);
 	    cout<<source<<endl;
-	    gSystem->Exec(Form("tar --remove-files -cf " + target + " " + source, startevt, startevt+nevents-1));
+	    gSystem->Exec( "tar --remove-files -cf " + target + " " + source );
 	} else if (nevents > 1) {
 	    auto target = csvname_pat;
 	    target.ReplaceAll("_plane%d_%d", "") += ".gz.tar";
