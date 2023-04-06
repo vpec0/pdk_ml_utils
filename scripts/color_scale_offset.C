@@ -15,6 +15,9 @@ namespace My {
     void SetColorScale(TH2* h)
     {
 	const int NCONTOURS = 256;
+	static int initialized = 0;
+	static Int_t full_palette[NCONTOURS] = {};
+
 
 	h->SetContour(NCONTOURS);
 
@@ -27,11 +30,15 @@ namespace My {
 	Double_t Green[Number]  = { 0.00, 1.00, 0.00};
 	Double_t Blue[Number]   = { 1.00, 1.00, 0.00};
 	Double_t Length[Number] = { 0.00, 0.50, 1.00 };
-	Int_t nb=NCONTOURS;
-	Int_t index = TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nb);
-	Int_t MyPalette[NCONTOURS];
-	FOR(i, NCONTOURS)
-	    MyPalette[i] = index+i;
+
+	Int_t index = full_palette[0];
+	if ( !initialized ) { // palette originially not initialized
+	    Int_t nb=NCONTOURS;
+	    index = TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nb);
+	    FOR(i, NCONTOURS)
+		full_palette[i] = index+i;
+	    initialized = 1;
+	}
 
 	// Get scale from the histogram
 	double low = h->GetMinimum();
@@ -39,24 +46,10 @@ namespace My {
 	double full_scale = 2*max(abs(hi), abs(low));
 
 	// Get new bounds
-	auto color_min = gROOT->GetColor(index + (0.5+low/full_scale)*NCONTOURS);
-	auto color_max = gROOT->GetColor(index + (0.5+hi/full_scale) *NCONTOURS - 1);
+	auto n_color_min = int((0.5+low/full_scale)*NCONTOURS);
+	auto n_color_max = int((0.5+hi/full_scale) *NCONTOURS - 1);
 
-	// Change the extreme colours of the new palette
-	Red[0] = color_min->GetRed(); Green[0] = color_min->GetGreen(); Blue[0] = color_min->GetBlue();
-	Red[2] = color_max->GetRed(); Green[2] = color_max->GetGreen(); Blue[2] = color_max->GetBlue();
-
-	// Set position of 0
-	Length[1] = abs(low)/(hi-low);
-
-	// Build the new palette with offset
-	index = TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nb);
-	FOR(i, NCONTOURS)
-	    MyPalette[i] = index+i;
-
-	// set it as default
-	TColor::SetPalette(NCONTOURS, MyPalette);
-	// set number of colors used by the histogram
+	TColor::SetPalette(n_color_max - n_color_min + 1, full_palette + n_color_min);
     }
 
 
