@@ -1,23 +1,55 @@
 #!/bin/bash
 
-(( $# < 2 )) && echo "Supply at least input file path and number of events. Output file prefix can ba passed as 3rd positional parameter. Event preselection can be switched off if 0 provided as 4th positional parameter" && exit 22
+OUTPREF=""
+PRESELECT=1 ;
 
-[ -z "$1" ] && echo "Provide input file name." && exit 22
+usage() {
+  echo "Usage: $0 [-pP] [-n NEVENTS] [-o OUTPUTPREFIX] INFNAME" 1>&2
+}
+exit_abnormal() {                         # Function: Exit with error.
+  usage
+  exit 1
+}
+
+(( $# < 1 )) && usage && exit 22
+
+NEVTS=1
+
+while getopts ":pPn:o:" options; do         # Loop: Get the next option;
+                                          # use silent error checking;
+                                          # option n takes an argument.
+  case "${options}" in                    #
+    n)                                    # If the option is n,
+      NEVTS=${OPTARG}                      # set $NAME to specified value.
+      ;;
+    p)
+	PRESELECT=1
+	;;
+    P)
+	PRESELECT=0
+	;;
+    o)
+	OUTPREF=${OPTARG}
+	;;
+    :)                                    # If expected argument omitted:
+      echo "Error: -${OPTARG} requires an argument."
+      exit_abnormal                       # Exit abnormally.
+      ;;
+    *)                                    # If unknown (any other) option:
+      exit_abnormal                       # Exit abnormally.
+      ;;
+  esac
+done
+
+DATAFILE="${@:$OPTIND:1}"
+[ -z "$DATAFILE" ] && echo "Provide input file name." && exit 22
 
 set -o xtrace
-
-DATAFILE=$1
-NEVTS=$2
-
-OUTPREF=""
-(( $# > 2 )) && OUTPREF=$3
-
-PRESELECT=1 ;
-(( $# > 3 )) && PRESELECT=$4
 
 INFNAME=$(basename $DATAFILE)
 OUTFNAME=${INFNAME%.root}
 [ -n "$OUTPREF" ] && OUTFNAME=$OUTPREF
+
 
 WHEREAMI=$(dirname $0)
 
