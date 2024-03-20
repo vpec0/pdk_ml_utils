@@ -43,8 +43,9 @@ def get_comp_from_root(rootf, prec, next_):
     for i in range(3) :
         mdata = ak.to_numpy(linear_data[i]).reshape(col_count[i], row_count[i])
         nz_indices = np.transpose(np.nonzero(mdata))
-        nz_x = [index[0] for index in nz_indices]
-        nz_y = [index[1] for index in nz_indices]
+        nz_x,nz_y = nz_indices[:,0], nz_indices[:,1]
+        # nz_x = [index[0] for index in nz_indices]
+        # nz_y = [index[1] for index in nz_indices]
         nz_values = mdata[nz_indices[:, 0], nz_indices[:, 1]]
         result.append((nz_x, nz_y, nz_values))
     return result
@@ -71,9 +72,12 @@ def create_hdf5_from_root(rootf_path, hdf5_path):
         ('value', np.float32)])
 
     with ur.open(rootf_path) as rootf:
-        with h5py.File(hdf5_path, 'a') as hdf5_file:
+        with h5py.File(hdf5_path, 'w') as hdf5_file:
+            tree = rootf['image2d_tpc_tree']
 
-            for i in range(10):
+            to_process = tree.num_entries
+            to_process = 10
+            for i in range(to_process):
                 by_plane = get_comp_from_root(rootf, i, i + 1)
                 iplane = -1
                 for nz_x, nz_y, nz_values in by_plane :
@@ -82,7 +86,7 @@ def create_hdf5_from_root(rootf_path, hdf5_path):
                     dset_name = f"image_plane{iplane}_{i + 1}"
                     if dset_name not in hdf5_file:
                         hdf5_file.create_dataset(dset_name, data=components, compression='gzip',
-                                                 compression_opts=4, chunks=True)
+                                                 compression_opts=1, chunks=True)
 
 
 def print_hdf5_dirtree(hdf5_path):
