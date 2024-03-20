@@ -13,7 +13,8 @@ def run(args) :
 
     # try to read in images from the 1st event
     images = b.array(entry_stop=1)
-    print(ak.num(images, axis=1))
+    print(f'{tree.num_entries = }')
+    print(ak.num(images, axis=-1))
 
 
 
