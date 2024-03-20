@@ -10,7 +10,7 @@ exit_abnormal() {                         # Function: Exit with error.
   exit 1
 }
 
-EVENT=0
+EVENT=-1
 
 while getopts ":n:" options; do         # Loop: Get the next option;
                                           # use silent error checking;
@@ -37,7 +37,11 @@ FNAME="${@:$OPTIND:1}"
 # echo $1 $2
 # echo $EVENT
 
-cat $FNAME  | grep -e " BackTracker" -e "p ->" -e "K ->" | nl -v0 -bp'p ->' | grep -B1 -A1 -E "^[[:space:]]+$EVENT[[:space:]]" | grep -B1 -E -e "^[[:space:]]+$EVENT[[:space:]]" -e"K ->" |sed -e"s/.*run: \(.*\) sub.* event: /Run \1 Event /"
+if [ $EVENT -eq -1 ] ; then
+    cat $FNAME  | grep -e " BackTracker" -e "p ->" -e "K ->" | nl -v0 -bp'p ->'
+else
+    cat $FNAME  | grep -e " BackTracker" -e "p ->" -e "K ->" | nl -v0 -bp'p ->' | grep -B1 -A1 -E "^[[:space:]]+$EVENT[[:space:]]" | grep -B1 -E -e "^[[:space:]]+$EVENT[[:space:]]" -e"K ->" |sed -e"s/.*run: \(.*\) sub.* event: /Run \1 Event /"
+fi
 #TYPESTRING=$(cat $FNAME  | grep -A1 -e "p ->" -e "K ->" | head -$[EVENT*5 + 4] | nl -v0 -bp'p ->'| tail -4) # | tr '\n' ';')
 
 #echo $TYPESTRING

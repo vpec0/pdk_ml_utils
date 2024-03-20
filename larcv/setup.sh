@@ -11,7 +11,7 @@ QUALS=$2
 
 source /cvmfs/dune.opensciencegrid.org/products/dune/setup_dune.sh
 setup dunesw $VERSION -q $QUALS
-. ../dev/larcvmaker/localProducts_larsoft_${VERSION%???}_${QUALS/:/_}/setup
+. $(dirname $BASH_SOURCE)/../../larcvmaker/localProducts_larsoft_${VERSION%???}_${QUALS/:/_}/setup
 mrbslp
 
 export LARCV_INCDIR=$LARCV_BASEDIR/include
